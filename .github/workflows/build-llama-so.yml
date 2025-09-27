@@ -1,0 +1,33 @@
+name: build-llama-so
+on: [workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { submodules: true }
+      - name: Install NDK + CMake
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r26d
+      - name: Fetch llama.cpp
+        run: |
+          git clone https://github.com/ggerganov/llama.cpp.git
+          cd llama.cpp
+          cmake -S . -B build -DGGML_CUDA=OFF -DGGML_OPENCL=OFF -DBUILD_SHARED_LIBS=ON
+          cmake --build build -j
+          mkdir -p ../android/app/src/main/cpp/prebuilt/arm64-v8a
+          cp build/libllama.so ../android/app/src/main/cpp/prebuilt/arm64-v8a/
+          cp -r include ../android/app/src/main/cpp/include
+      - name: Build JNI bridge (arm64-v8a)
+        run: |
+          cd android
+          cmake -S app/src/main/cpp -B app/src/main/cpp/build \
+            -D CMAKE_LIBRARY_OUTPUT_DIRECTORY=app/src/main/cpp/build/out
+          cmake --build app/src/main/cpp/build -j
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: libllama-android-arm64
+          path: android/app/src/main/cpp/build/out/libbridge.so
