@@ -28,7 +28,7 @@ jobs:
             -DLLAMA_CURL=OFF -DGGML_CUDA=OFF -DGGML_OPENCL=OFF -DGGML_METAL=OFF -DGGML_BLAS=OFF
           cmake --build build-llama-android -j
           mkdir -p android/app/src/main/cpp/prebuilt/${{ env.ANDROID_ABI }}
-          find build-llama-android -name "libllama.so" -print -exec cp {} android/app/src/main/cpp/prebuilt/${{ env.ANDROID_ABI }}/ \;
+          find build-llama-android -name \"libllama.so\" -print -exec cp {} android/app/src/main/cpp/prebuilt/${{ env.ANDROID_ABI }}/ \\;
           cp -r llama.cpp/include android/app/src/main/cpp/include
 
       - name: Ensure JNI sources exist (create stubs if missing)
@@ -51,17 +51,17 @@ EOF
           if [ ! -f android/app/src/main/cpp/bridge.cpp ]; then
             cat > android/app/src/main/cpp/bridge.cpp <<'EOF'
 #include <jni.h>
-extern "C" JNIEXPORT jboolean JNICALL
-Java_com_example_app_LlamaBridge_init(JNIEnv*, jclass, jstring, jint, jint){ return JNI_TRUE; }
-extern "C" JNIEXPORT jstring JNICALL
-Java_com_example_app_LlamaBridge_predict(JNIEnv* env, jclass, jstring, jint, jdouble, jdouble, jint, jobjectArray){
-  return env->NewStringUTF("ok");
+extern \"C\" JNIEXPORT jboolean JNICALL
+Java_com_example_app_LlamaBridge_init(JNIEnv*, jclass, jstring, jint, jint) { return JNI_TRUE; }
+extern \"C\" JNIEXPORT jstring JNICALL
+Java_com_example_app_LlamaBridge_predict(JNIEnv* env, jclass, jstring, jint, jdouble, jdouble, jint, jobjectArray) {
+  return env->NewStringUTF(\"ok\");
 }
-extern "C" JNIEXPORT void JNICALL
-Java_com_example_app_LlamaBridge_unload(JNIEnv*, jclass){}
+extern \"C\" JNIEXPORT void JNICALL
+Java_com_example_app_LlamaBridge_unload(JNIEnv*, jclass) {}
 EOF
           fi
-          echo "----- TREE -----"
+          echo \"----- TREE -----\"
           ls -R android/app/src/main/cpp || true
 
       - name: Build JNI bridge (arm64 via NDK)
